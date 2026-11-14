@@ -30,6 +30,24 @@ def list_entries(
     return PageResult(items=items, total=total, page=page, size=size)
 
 
+@router.get("/audit-duration-summary")
+def audit_duration_summary(
+    window: str | None = Query(default=None, description="审计窗口，如 2026-09"),
+) -> dict[str, Any]:
+    """读取审计复核队列的查询耗时汇总，用于验证优化建议的提速结论。
+
+    必须声明在 /{entry_id} 之前，否则字面量路径会被当成 entry_id 解析失败。
+    """
+    return service.audit_duration_summary(window)
+
+
+@router.get("/export")
+def export_entries() -> dict[str, Any]:
+    """导出查询优化建议清单：返回当前过滤条件下的全量数据。"""
+    items, total = service.list_entries(page=1, size=10000)
+    return {"module": "opt", "total": total, "items": items}
+
+
 @router.get("/{entry_id}", response_model=dict)
 def get_entry(entry_id: int) -> dict:
     """读取单条优化建议明细；不存在时给出可读的错误说明。"""
@@ -56,10 +74,3 @@ def run_action(entry_id: int, payload: EntryPayload) -> ActionResult:
     if entry is None:
         return ActionResult(ok=False, message=message)
     return ActionResult(ok=True, message=message, entry=entry)
-
-
-@router.get("/export")
-def export_entries() -> dict[str, Any]:
-    """导出查询优化建议清单：返回当前过滤条件下的全量数据。"""
-    items, total = service.list_entries(page=1, size=10000)
-    return {"module": "opt", "total": total, "items": items}

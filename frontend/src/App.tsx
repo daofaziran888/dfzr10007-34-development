@@ -18,8 +18,9 @@ import ExportView from './views/export'
 import AlarmView from './views/alarm'
 import RefreshView from './views/refresh'
 import AuditView from './views/audit'
+import AuditReviewView from './views/audit-review'
 
-const navItems = [{ label: "运营概览", path: "/" }, { label: "数据集市构建", path: "/mart" }, { label: "自助SQL查询", path: "/sqlpad" }, { label: "拖拽可视化", path: "/vizdrag" }, { label: "看板协作管理", path: "/collab" }, { label: "指标异动归因", path: "/anomaly" }, { label: "分析模型沉淀", path: "/model" }, { label: "查询优化建议", path: "/opt" }, { label: "数据故事编排", path: "/story" }, { label: "数据准备流水线", path: "/etl" }, { label: "数据目录检索", path: "/catalog" }, { label: "数据采样管理", path: "/sample" }, { label: "同环比分析", path: "/compare" }, { label: "分析导出中心", path: "/export" }, { label: "分析告警规则", path: "/alarm" }, { label: "数据定时刷新", path: "/refresh" }, { label: "查询审计日志", path: "/audit" }]
+const navItems = [{ label: "运营概览", path: "/" }, { label: "数据集市构建", path: "/mart" }, { label: "自助SQL查询", path: "/sqlpad" }, { label: "拖拽可视化", path: "/vizdrag" }, { label: "看板协作管理", path: "/collab" }, { label: "指标异动归因", path: "/anomaly" }, { label: "分析模型沉淀", path: "/model" }, { label: "查询优化建议", path: "/opt" }, { label: "数据故事编排", path: "/story" }, { label: "数据准备流水线", path: "/etl" }, { label: "数据目录检索", path: "/catalog" }, { label: "数据采样管理", path: "/sample" }, { label: "同环比分析", path: "/compare" }, { label: "分析导出中心", path: "/export" }, { label: "分析告警规则", path: "/alarm" }, { label: "数据定时刷新", path: "/refresh" }, { label: "查询审计日志", path: "/audit" }, { label: "审计复核队列", path: "/audit-review" }]
 
 export default function App() {
   const [operator] = useState('值班管理员')
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="/alarm" element={<AlarmView />} />
           <Route path="/refresh" element={<RefreshView />} />
           <Route path="/audit" element={<AuditView />} />
+          <Route path="/audit-review" element={<AuditReviewView />} />
         </Routes>
       </main>
     </div>

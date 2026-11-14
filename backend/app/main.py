@@ -26,6 +26,17 @@ for module in ROUTERS:
     app.include_router(module.router)
 
 
+@app.on_event("startup")
+def ensure_default_review_queue() -> None:
+    """启动即生成默认审计窗口的复核队列，保证独立视图与运营概览打开就有数据。
+
+    生成是幂等的：重复启动不会产生第二份队列。
+    """
+    from app.services.audit_review import AuditReviewService
+
+    AuditReviewService().generate_queues()
+
+
 @app.get("/api/health")
 def health() -> dict[str, object]:
     """健康检查：确认服务已经监听、示例数据已经就绪。"""

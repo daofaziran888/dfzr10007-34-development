@@ -22,5 +22,6 @@ from app.routers import export as router_export
 from app.routers import alarm as router_alarm
 from app.routers import refresh as router_refresh
 from app.routers import audit as router_audit
+from app.routers import audit_review as router_audit_review
 
-ROUTERS = [router_mart, router_sqlpad, router_vizdrag, router_collab, router_anomaly, router_model, router_opt, router_story, router_etl, router_catalog, router_sample, router_compare, router_export, router_alarm, router_refresh, router_audit]
+ROUTERS = [router_mart, router_sqlpad, router_vizdrag, router_collab, router_anomaly, router_model, router_opt, router_story, router_etl, router_catalog, router_sample, router_compare, router_export, router_alarm, router_refresh, router_audit, router_audit_review]

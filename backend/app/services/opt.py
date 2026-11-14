@@ -59,3 +59,13 @@ class OptService:
         entry["pending"] = target != STATUS_ORDER[-1]
         entry["abnormal"] = action in NEGATIVE_ACTIONS
         return entry, f"优化建议已{action}"
+
+    def audit_duration_summary(self, window: str | None = None) -> dict[str, Any]:
+        """读取审计复核队列输出的查询耗时汇总，作为提速结论的可验证依据。
+
+        优化建议自身不重复计算耗时，统一以审计复核队列的权威快照为准，
+        因此「预计提速」可以对照来源明确的当前耗时进行复核。
+        """
+        from app.services.audit_review import AuditReviewService
+
+        return AuditReviewService().duration_summary(window)

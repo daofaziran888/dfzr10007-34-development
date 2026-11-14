@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { request } from '@/api/client'
+import { fetchJson, request } from '@/api/client'
 
 const ENDPOINT = '/api/opt'
 const columns = [
@@ -41,11 +41,26 @@ const stats = [
 
 type Row = Record<string, string | number | null>
 
+type AuditDurationSummary = {
+  审计窗口: string
+  数据来源: string
+  记录数: number
+  待复核数: number
+  已复核数: number
+  总耗时: string
+  平均耗时: string
+  最大耗时: string
+  总扫描行数: number
+  总返回行数: number
+  明细: { 记录编号: string; 执行耗时: string; 扫描行数: number; 复核状态: string; 队列: string }[]
+}
+
 export default function OptView() {
   const [rows, setRows] = useState<Row[]>([])
   const [total, setTotal] = useState(0)
   const [errorMessage, setErrorMessage] = useState('')
   const [filters, setFilters] = useState<Record<string, string>>({})
+  const [durationSummary, setDurationSummary] = useState<AuditDurationSummary | null>(null)
   const filterFields = useMemo(() => columns.slice(0, 3), [])
 
   const reload = useCallback(async () => {
@@ -67,6 +82,13 @@ export default function OptView() {
   useEffect(() => {
     void reload()
   }, [reload])
+
+  useEffect(() => {
+    // 优化建议直接读取审计复核队列的查询耗时汇总，提速结论对照权威耗时验证。
+    fetchJson<AuditDurationSummary>('/api/opt/audit-duration-summary')
+      .then(setDurationSummary)
+      .catch(() => setDurationSummary(null))
+  }, [])
 
   async function runAction(action: string, row: Row) {
     setErrorMessage('')
@@ -109,6 +131,55 @@ export default function OptView() {
           </article>
         ))}
       </div>
+
+      {durationSummary && (
+        <div className="queue-block">
+          <div className="queue-head">
+            <h3>查询耗时汇总（读取自审计复核队列）</h3>
+            <span className="queue-meta">窗口 {durationSummary.审计窗口} · 用于验证提速结论</span>
+          </div>
+          <p className="source-note">来源：{durationSummary.数据来源}</p>
+          <div className="stat-row">
+            <article className="stat-card">
+              <span className="stat-label">样本记录数</span>
+              <strong className="stat-value">{durationSummary.记录数}</strong>
+            </article>
+            <article className="stat-card">
+              <span className="stat-label">待复核（未完成）</span>
+              <strong className="stat-value">{durationSummary.待复核数}</strong>
+            </article>
+            <article className="stat-card">
+              <span className="stat-label">总耗时 / 平均 / 最大</span>
+              <strong className="stat-value">
+                {durationSummary.总耗时} / {durationSummary.平均耗时} / {durationSummary.最大耗时}
+              </strong>
+            </article>
+          </div>
+          <table className="data-table">
+            <thead>
+              <tr><th>记录编号</th><th>当前执行耗时</th><th>扫描行数</th><th>所属队列</th><th>复核状态</th></tr>
+            </thead>
+            <tbody>
+              {durationSummary.明细.map((item) => (
+                <tr key={item.记录编号}>
+                  <td>{item.记录编号}</td>
+                  <td>{item.执行耗时}</td>
+                  <td>{item.扫描行数.toLocaleString('zh-CN')}</td>
+                  <td><span className={`badge ${item.队列}`}>{item.队列}</span></td>
+                  <td>
+                    <span className={item.复核状态 === '已复核' ? 'badge reviewed' : 'badge pending'}>
+                      {item.复核状态}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {durationSummary.明细.length === 0 && (
+                <tr><td className="empty-state" colSpan={5}>当前窗口复核队列暂无记录</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <form className="filter-bar" onSubmit={(event) => { event.preventDefault(); void reload() }}>
         {filterFields.map((field) => (
